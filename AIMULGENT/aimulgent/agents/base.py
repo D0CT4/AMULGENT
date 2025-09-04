@@ -8,6 +8,8 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
+from .hrm_reasoning import HRMReasoning
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,11 +20,18 @@ class BaseAgent(ABC):
     Follows KISS principle with minimal required interface.
     """
     
-    def __init__(self, agent_id: str = None):
+    def __init__(self, agent_id: str = None, config: Dict[str, Any] = None):
         self.agent_id = agent_id or self.__class__.__name__.lower()
         self.logger = logging.getLogger(f"{__name__}.{self.agent_id}")
         self.capabilities: List[str] = []
         self.running = False
+        self.config = config or {}
+        
+        # Initialize HRM reasoning if enabled
+        if self.config.get("hrm", {}).get("enable", False):
+            self.hrm = HRMReasoning(self.config)
+        else:
+            self.hrm = None
     
     async def start(self) -> None:
         """Start the agent."""
@@ -60,8 +69,26 @@ class BaseAgent(ABC):
     
     def get_status(self) -> Dict[str, Any]:
         """Get agent status."""
-        return {
+        status = {
             "agent_id": self.agent_id,
             "running": self.running,
             "capabilities": self.capabilities
         }
+        
+        # Add HRM status if available
+        if self.hrm:
+            status["hrm"] = self.hrm.get_status()
+        
+        return status
+    
+    def perform_reasoning(self, goal: str = None) -> Dict[str, Any]:
+        """Integrate HRM reasoning into agent decision-making."""
+        if not self.hrm:
+            return {"error": "HRM reasoning not enabled"}
+        
+        if goal:
+            self.hrm.add_goal(goal)
+        
+        result = self.hrm.reason_hierarchically()
+        self.logger.info(f"HRM Reasoning Result for {self.agent_id}: {result}")
+        return result
