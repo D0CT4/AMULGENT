@@ -9,8 +9,25 @@
     "enable_monitoring": true
   },
   
-  "coordinator": {
-    "heartbeat_interval": 30.0,
+  "coordinato  "hrm": {
+    "enable": true,
+    "hidden_size": 256,
+    "h_layers": 2,
+    "l_layers": 4,
+    "h_cycles": 2,
+    "l_cycles": 4,
+    "max_steps": 10,
+    "learning_rate": 0.0001,
+    "embedding_size": 128,
+    "output_size": 128,
+    "replay_buffer_size": 1000,
+    "max_execution_steps": 20,
+    "exploration_prob": 0.1,
+    "use_rmsnorm": false,
+    "use_swiglu": false,
+    "use_iterative_refinement": false,
+    "refinement_segments": 2
+  },at_interval": 30.0,
     "heartbeat_timeout": 90.0,
     "task_timeout_default": 300.0,
     "max_retries": 3,
@@ -317,6 +334,30 @@
       "consensus_algorithms": ["raft", "pbft"],
       "conflict_resolution": "majority_vote",
       "knowledge_sharing": true
+    },
+    
+    "hrm_reasoning": {
+      "enabled": true,
+      "max_goals": 5,
+      "reasoning_depth": 3,
+      "enable_logging": true,
+      "auto_plan_generation": true,
+      "hidden_size": 256,
+      "h_layers": 2,
+      "l_layers": 4,
+      "h_cycles": 2,
+      "l_cycles": 4,
+      "max_steps": 10,
+      "learning_rate": 0.0001,
+      "embedding_size": 128,
+      "output_size": 128,
+      "replay_buffer_size": 1000,
+      "max_execution_steps": 20,
+      "exploration_prob": 0.1,
+      "use_rmsnorm": true,
+      "use_swiglu": true,
+      "use_iterative_refinement": true,
+      "refinement_segments": 3
     }
   },
   

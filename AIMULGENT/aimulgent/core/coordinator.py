@@ -68,6 +68,7 @@ class Coordinator:
         self.task_queue: asyncio.Queue = asyncio.Queue()
         self.running = False
         self._background_tasks: List[asyncio.Task] = []
+        self.logger = logger  # Add logger attribute
     
     async def start(self) -> None:
         """Start the coordination system."""
@@ -230,32 +231,36 @@ class Coordinator:
                 agent_info.tasks_completed += 1
                 agent_info.last_heartbeat = datetime.now()
     
-    def get_status(self) -> Dict[str, Any]:
-        """Get system status."""
-        
-        active_agents = sum(1 for info in self.agents.values() if info.status != AgentStatus.ERROR)
-        completed_tasks = sum(1 for task in self.tasks.values() if task.status == TaskStatus.COMPLETED)
-        failed_tasks = sum(1 for task in self.tasks.values() if task.status == TaskStatus.FAILED)
-        
-        return {
-            "running": self.running,
-            "agents": {
-                "total": len(self.agents),
-                "active": active_agents,
-                "details": {
-                    agent_id: {
-                        "status": info.status.value,
-                        "capabilities": info.capabilities,
-                        "tasks_completed": info.tasks_completed,
-                        "current_task": info.current_task
-                    }
-                    for agent_id, info in self.agents.items()
-                }
-            },
-            "tasks": {
-                "total": len(self.tasks),
-                "completed": completed_tasks,
-                "failed": failed_tasks,
-                "pending": self.task_queue.qsize()
-            }
+    async def coordinate_agents(self, agents: List[Any]) -> Dict[str, Any]:
+        """Coordinate agents with advanced HRM reasoning."""
+        coordination_results = {
+            "total_agents": len(agents),
+            "hrm_enabled_agents": 0,
+            "reasoning_cycles": 0,
+            "total_actions": 0,
+            "neural_updates": 0
         }
+        
+        for agent in agents:
+            if hasattr(agent, 'hrm') and agent.hrm is not None:
+                coordination_results["hrm_enabled_agents"] += 1
+                
+                # Get HRM status
+                hrm_status = agent.hrm.get_status()
+                
+                # Trigger reasoning if goals exist
+                if hrm_status["goals_count"] > 0:
+                    reasoning_output = agent.perform_reasoning()
+                    coordination_results["reasoning_cycles"] += 1
+                    coordination_results["total_actions"] += len(reasoning_output.get("actions", []))
+                    
+                    # Check for neural learning
+                    if "model_stats" in reasoning_output:
+                        coordination_results["neural_updates"] += 1
+                    
+                    self.logger.info(f"Coordinated HRM for agent {agent.agent_id}: {len(reasoning_output.get('actions', []))} actions generated")
+                else:
+                    self.logger.debug(f"Agent {agent.agent_id} has no active goals")
+        
+        self.logger.info(f"Coordination complete: {coordination_results}")
+        return coordination_results
