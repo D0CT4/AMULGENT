@@ -4,7 +4,6 @@ Tests for Advanced HRM Reasoning System
 
 import unittest
 import torch
-from unittest.mock import patch, MagicMock
 from aimulgent.agents.hrm_reasoning import HRMReasoning, HierarchicalReasoningModel, AdaptiveComputationTime
 from aimulgent.agents.base import BaseAgent
 
@@ -94,12 +93,8 @@ class TestHRMReasoning(unittest.TestCase):
         self.assertEqual(len(self.hrm.strategic_layer), 1)
         self.assertEqual(self.hrm.strategic_layer[0], goal)
     
-    @patch('aimulgent.agents.hrm_reasoning.torch.randn')
-    def test_plan_tactical(self, mock_randn):
+    def test_plan_tactical(self):
         """Test tactical planning generation."""
-        # Mock random tensor for consistent testing
-        mock_randn.return_value = torch.randn(1, 32)
-        
         goal = "Test goal"
         plans = self.hrm.plan_tactical(goal)
         
@@ -111,12 +106,8 @@ class TestHRMReasoning(unittest.TestCase):
             self.assertEqual(plan["goal"], goal)
             self.assertIn("confidence", plan)
     
-    @patch('aimulgent.agents.hrm_reasoning.torch.randn')
-    def test_execute_operational(self, mock_randn):
+    def test_execute_operational(self):
         """Test operational action execution."""
-        # Mock random tensor
-        mock_randn.return_value = torch.randn(1, 32)
-        
         plan = {
             "plan_id": "test_plan",
             "goal": "Test goal",
@@ -136,12 +127,8 @@ class TestHRMReasoning(unittest.TestCase):
             self.assertEqual(action["plan_id"], plan["plan_id"])
             self.assertIn("q_values", action)
     
-    @patch('aimulgent.agents.hrm_reasoning.torch.randn')
-    def test_reason_hierarchically(self, mock_randn):
+    def test_reason_hierarchically(self):
         """Test full hierarchical reasoning cycle."""
-        # Mock random tensors
-        mock_randn.return_value = torch.randn(1, 32)
-        
         # Add a goal and run reasoning
         self.hrm.add_goal("Test optimization goal")
         result = self.hrm.reason_hierarchically()
@@ -288,11 +275,8 @@ class TestBaseAgentWithHRM(unittest.TestCase):
         agent = TestAgent("test_agent", self.config_without_hrm)
         self.assertIsNone(agent.hrm)
 
-    @patch('aimulgent.agents.hrm_reasoning.torch.randn')
-    def test_perform_reasoning_with_hrm(self, mock_randn):
+    def test_perform_reasoning_with_hrm(self):
         """Test performing reasoning with HRM enabled."""
-        mock_randn.return_value = torch.randn(1, 32)
-        
         # Create a concrete agent class for testing
         class TestAgent(BaseAgent):
             async def process_task(self, task_type: str, input_data):
@@ -327,6 +311,160 @@ class TestBaseAgentWithHRM(unittest.TestCase):
         status = agent.get_status()
         self.assertIn("hrm", status)
         self.assertIn("goals_count", status["hrm"])
+
+
+class TestEnhancedHRMFeatures(unittest.TestCase):
+    """Test enhanced HRM features from external research integration."""
+    
+    def setUp(self):
+        self.base_config = {
+            "hidden_size": 64,
+            "h_layers": 1,
+            "l_layers": 2,
+            "h_cycles": 1,
+            "l_cycles": 2,
+            "max_steps": 5,
+            "learning_rate": 1e-3,
+            "embedding_size": 32,
+            "output_size": 32,
+            "replay_buffer_size": 100,
+            "max_execution_steps": 10,
+            "exploration_prob": 0.1
+        }
+    
+    def test_rmsnorm_feature(self):
+        """Test RMSNorm enhancement."""
+        config = self.base_config.copy()
+        config["use_rmsnorm"] = True
+        
+        hrm = HRMReasoning(config)
+        
+        # Check that model uses RMSNorm
+        self.assertTrue(hrm.model.use_rmsnorm)
+        
+        # Test forward pass works
+        result = hrm.reason_hierarchically()
+        self.assertIn("model_stats", result)
+    
+    def test_swiglu_feature(self):
+        """Test SwiGLU activation enhancement."""
+        config = self.base_config.copy()
+        config["use_swiglu"] = True
+        
+        hrm = HRMReasoning(config)
+        
+        # Check that model uses SwiGLU
+        self.assertTrue(hrm.model.use_swiglu)
+        
+        # Test forward pass works
+        result = hrm.reason_hierarchically()
+        self.assertIn("model_stats", result)
+    
+    def test_iterative_refinement(self):
+        """Test iterative refinement feature."""
+        config = self.base_config.copy()
+        config["use_iterative_refinement"] = True
+        config["refinement_segments"] = 3
+        
+        hrm = HRMReasoning(config)
+        
+        # Check that model uses iterative refinement
+        self.assertTrue(hrm.model.use_iterative_refinement)
+        self.assertEqual(hrm.model.refinement_segments, 3)
+        
+        # Test reasoning with refinement
+        hrm.add_goal("Test iterative refinement")
+        result = hrm.reason_hierarchically()
+        
+        self.assertIn("model_stats", result)
+        self.assertGreater(len(result["actions"]), 0)
+    
+    def test_enhanced_act_mechanism(self):
+        """Test enhanced ACT with separate Q-values."""
+        config = self.base_config.copy()
+        hrm = HRMReasoning(config)
+        
+        # Test that ACT returns separate halt/continue Q-values
+        hidden_state = torch.randn(1, 64)
+        should_halt, q_values = hrm.model.act(hidden_state, step=0, training=False)
+        
+        # Check output shapes and types
+        self.assertEqual(q_values.shape, torch.Size([2]))  # [halt, continue]
+        self.assertIsInstance(should_halt.item(), float)
+    
+    def test_enhanced_status_reporting(self):
+        """Test enhanced status reporting with new metrics."""
+        config = self.base_config.copy()
+        config["use_rmsnorm"] = True
+        config["use_swiglu"] = True
+        config["use_iterative_refinement"] = True
+        
+        hrm = HRMReasoning(config)
+        
+        # Add some activity
+        hrm.add_goal("Test enhanced status")
+        
+        status = hrm.get_status()
+        
+        # Check enhanced fields are present
+        self.assertIn("architecture", status)
+        self.assertTrue(status["architecture"]["use_rmsnorm"])
+        self.assertTrue(status["architecture"]["use_swiglu"])
+        self.assertTrue(status["architecture"]["use_iterative_refinement"])
+    
+    def test_enhanced_learning(self):
+        """Test enhanced learning with separate Q-values."""
+        config = self.base_config.copy()
+        hrm = HRMReasoning(config)
+        
+        # Add some experiences to trigger learning
+        for i in range(35):  # Enough to trigger learning
+            experience = {
+                "state": torch.randn(1, 32),
+                "action": torch.randn(1, 32),
+                "q_values": torch.randn(2),  # Now expects [halt, continue]
+                "reward": 1.0 if i % 5 == 0 else 0.1,
+                "next_state": torch.randn(1, 32),
+                "done": i % 10 == 9
+            }
+            hrm.replay_buffer.append(experience)
+        
+        # Trigger learning
+        initial_params = list(hrm.model.parameters())[0].clone()
+        hrm._learn_from_experience()
+        
+        # Check that parameters have changed (learning occurred)
+        final_params = list(hrm.model.parameters())[0]
+        self.assertFalse(torch.equal(initial_params, final_params))
+    
+    def test_combined_enhancements(self):
+        """Test all enhancements working together."""
+        config = self.base_config.copy()
+        config.update({
+            "use_rmsnorm": True,
+            "use_swiglu": True,
+            "use_iterative_refinement": True,
+            "refinement_segments": 2
+        })
+        
+        hrm = HRMReasoning(config)
+        
+        # Test complete reasoning cycle with all enhancements
+        hrm.add_goal("Test all enhancements together")
+        result = hrm.reason_hierarchically()
+        
+        # Verify all features are active and working
+        status = hrm.get_status()
+        model_stats = hrm.get_model_stats()
+        
+        self.assertIn("enhanced_features", model_stats)
+        self.assertTrue(model_stats["enhanced_features"]["rmsnorm"])
+        self.assertTrue(model_stats["enhanced_features"]["swiglu"])
+        self.assertTrue(model_stats["enhanced_features"]["iterative_refinement"])
+        
+        # Verify reasoning worked
+        self.assertGreater(len(result["plans"]), 0)
+        self.assertGreater(len(result["actions"]), 0)
 
 
 if __name__ == '__main__':

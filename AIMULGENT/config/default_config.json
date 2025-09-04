@@ -22,7 +22,11 @@
     "output_size": 128,
     "replay_buffer_size": 1000,
     "max_execution_steps": 20,
-    "exploration_prob": 0.1
+    "exploration_prob": 0.1,
+    "use_rmsnorm": false,
+    "use_swiglu": false,
+    "use_iterative_refinement": false,
+    "refinement_segments": 2
   },at_interval": 30.0,
     "heartbeat_timeout": 90.0,
     "task_timeout_default": 300.0,
@@ -349,7 +353,11 @@
       "output_size": 128,
       "replay_buffer_size": 1000,
       "max_execution_steps": 20,
-      "exploration_prob": 0.1
+      "exploration_prob": 0.1,
+      "use_rmsnorm": true,
+      "use_swiglu": true,
+      "use_iterative_refinement": true,
+      "refinement_segments": 3
     }
   },
   
