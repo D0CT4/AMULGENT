@@ -68,6 +68,7 @@ class Coordinator:
         self.task_queue: asyncio.Queue = asyncio.Queue()
         self.running = False
         self._background_tasks: List[asyncio.Task] = []
+        self.logger = logger  # Add logger attribute
     
     async def start(self) -> None:
         """Start the coordination system."""

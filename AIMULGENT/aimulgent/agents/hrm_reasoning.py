@@ -245,8 +245,17 @@ class HierarchicalReasoningModel(nn.Module):
         l_state = self.l_init.unsqueeze(0).expand(batch_size, -1)
         
         # Ensure input embedding matches hidden size via persistent projection
-        if self.input_proj is not None and input_embedding.size(-1) != self.hidden_size:
+        if self.input_proj is not None:
             input_embedding = self.input_proj(input_embedding)
+        elif input_embedding.size(-1) != self.hidden_size:
+            # Create temporary projection if sizes don't match
+            if not hasattr(self, '_temp_input_proj'):
+                self._temp_input_proj = nn.Linear(
+                    input_embedding.size(-1), 
+                    self.hidden_size, 
+                    bias=False
+                ).to(input_embedding.device)
+            input_embedding = self._temp_input_proj(input_embedding)
         
         # Enhanced hierarchical reasoning with optional iterative refinement
         if self.use_iterative_refinement:
