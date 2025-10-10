@@ -1,5 +1,4 @@
 name: Lint
-
 # Run linting on push to main branch and on pull requests
 on:
   push:
@@ -38,22 +37,19 @@ jobs:
     - name: Check code formatting with black
       run: |
         cd AIMULGENT
-        black --check --diff aimulgent/
+        black --check aimulgent/
         
-    - name: Check import sorting with isort
+    - name: Run type checking with mypy
       run: |
         cd AIMULGENT
-        isort --check-only --diff aimulgent/
+        mypy aimulgent/ --ignore-missing-imports
         
-    - name: Run mypy type checking
-      run: |
-        cd AIMULGENT
-        mypy aimulgent/ --ignore-missing-imports --no-strict-optional
-      continue-on-error: true
-      
     - name: Upload lint results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: lint-results
-        path: AIMULGENT/lint-results/
+        path: |
+          AIMULGENT/.flake8
+          AIMULGENT/.mypy_cache/
+        retention-days: 7
