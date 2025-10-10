@@ -1,0 +1,45 @@
+name: Test
+
+# Run tests on push to main branch and on pull requests
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        cd AIMULGENT
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pytest pytest-asyncio pytest-cov
+        
+    - name: Run tests with pytest
+      run: |
+        cd AIMULGENT
+        pytest tests/ -v --tb=short
+        
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.python-version }}
+        path: AIMULGENT/test-results/
