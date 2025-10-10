@@ -1,0 +1,57 @@
+name: Coverage
+
+# Run coverage checks on push to main branch and on pull requests
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        cd AIMULGENT
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov pytest-asyncio
+        pip install -e .
+        
+    - name: Run tests with coverage
+      run: |
+        cd AIMULGENT
+        pytest tests/ --cov=aimulgent --cov-report=xml --cov-report=html --cov-report=term-missing -v
+        
+    - name: Upload coverage reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-reports
+        path: |
+          AIMULGENT/coverage.xml
+          AIMULGENT/htmlcov/
+          
+    - name: Coverage summary
+      if: always()
+      run: |
+        cd AIMULGENT
+        echo "Coverage report generated."
+        echo "Minimum coverage threshold: 80%"
+        
+    - name: Check coverage threshold
+      run: |
+        cd AIMULGENT
+        coverage report --fail-under=80
+      continue-on-error: true
