@@ -7,20 +7,43 @@ name = "aimulgent"
 version = "1.0.0"
 description = "AI Multiple Agents for Coding - Advanced multi-agent system"
 readme = "README.md"
-license = "MIT"
+license = {text = "MIT"}
 authors = [
     {name = "AI Research Team", email = "research@aimulgent.ai"},
+]
+maintainers = [
+    {name = "AI Research Team", email = "research@aimulgent.ai"},
+]
+keywords = [
+    "ai",
+    "multi-agent",
+    "code-analysis",
+    "static-analysis",
+    "security",
+    "code-quality",
+    "machine-learning",
+    "nlp",
+    "transformers",
+    "ast",
+    "agent-based",
+    "orchestration",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
 ]
 requires-python = ">=3.8"
 dependencies = [
@@ -57,19 +80,58 @@ dev = [
     "isort==5.12.0",
     "bandit==1.7.5",
     "safety==2.3.5",
+    "build==1.0.3",
+    "twine==4.0.2",
 ]
 gpu = [
     "torch[gpu]==2.1.0",
     "faiss-gpu==1.7.4",
+]
+monitoring = [
+    "prometheus-client==0.19.0",
+    "opentelemetry-api==1.21.0",
+    "opentelemetry-sdk==1.21.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/D0CT4/AMULGENT"
 Repository = "https://github.com/D0CT4/AMULGENT"
 Documentation = "https://github.com/D0CT4/AMULGENT/blob/main/README.md"
+Issues = "https://github.com/D0CT4/AMULGENT/issues"
+Changelog = "https://github.com/D0CT4/AMULGENT/blob/main/CHANGELOG.md"
 
 [project.scripts]
 aimulgent = "aimulgent.main:main"
+
+# Package discovery
+[tool.hatchling.build.targets.wheel]
+packages = ["aimulgent"]
+
+[tool.hatchling.build.targets.sdist]
+include = [
+    "/aimulgent",
+    "/config",
+    "/tests",
+    "README.md",
+    "LICENSE",
+    "requirements.txt",
+    "pyproject.toml",
+]
+exclude = [
+    "*.pyc",
+    "__pycache__",
+    ".git*",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "*.egg-info",
+    "dist",
+    "build",
+]
+
+# Version management
+[tool.hatchling.version]
+path = "aimulgent/__version__.py"
 
 [tool.ruff]
 line-length = 100
