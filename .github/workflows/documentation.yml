@@ -1,0 +1,69 @@
+name: Documentation
+
+# Build documentation on push to main branch and on pull requests
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        cd AIMULGENT
+        python -m pip install --upgrade pip
+        pip install sphinx mkdocs mkdocs-material pdoc
+        pip install -e .
+        
+    - name: Build Sphinx documentation
+      run: |
+        cd AIMULGENT
+        mkdir -p docs/sphinx
+        sphinx-quickstart -q -p AIMULGENT -a "AI Research Team" -v 1.0.0 docs/sphinx
+        sphinx-build -b html docs/sphinx docs/sphinx/_build/html
+      continue-on-error: true
+        
+    - name: Build MkDocs documentation
+      run: |
+        cd AIMULGENT
+        if [ -f mkdocs.yml ]; then
+          mkdocs build --clean
+        else
+          echo "No mkdocs.yml found, skipping MkDocs build"
+        fi
+      continue-on-error: true
+        
+    - name: Generate API documentation with pdoc
+      run: |
+        cd AIMULGENT
+        pdoc aimulgent -o docs/api --html
+      continue-on-error: true
+        
+    - name: Upload documentation artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation
+        path: |
+          AIMULGENT/docs/
+          AIMULGENT/site/
+          
+    - name: Documentation build summary
+      if: always()
+      run: |
+        echo "Documentation build completed."
+        echo "Review the uploaded artifacts for generated documentation."
