@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  aimulgent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: aimulgent:latest
+    container_name: aimulgent
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+      - AIMULGENT_ENV=${AIMULGENT_ENV:-production}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      # Mount data directory for persistence
+      - ./data:/app/data
+      # Mount config for environment-specific settings
+      - ./config:/app/config:ro
+    ports:
+      # Expose health check/metrics port if needed
+      - "8000:8000"
+    networks:
+      - aimulgent-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    # Resource limits (adjust as needed)
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+
+  # Optional: Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: aimulgent-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - aimulgent-network
+    profiles:
+      - monitoring
+
+  # Optional: Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: aimulgent-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - aimulgent-network
+    profiles:
+      - monitoring
+    depends_on:
+      - prometheus
+
+networks:
+  aimulgent-network:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:
