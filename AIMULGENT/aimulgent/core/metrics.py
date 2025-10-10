@@ -25,6 +25,7 @@ try:
         generate_latest,
         CONTENT_TYPE_LATEST,
     )
+
     PROMETHEUS_AVAILABLE = True
 except ImportError:
     PROMETHEUS_AVAILABLE = False
@@ -39,18 +40,20 @@ class MetricsCollector:
 
     def __init__(self, registry: Optional[CollectorRegistry] = None):
         """Initialize metrics collector.
-        
+
         Args:
             registry: Custom Prometheus registry (uses default if None)
         """
         self.registry = registry
         self._initialized = False
-        
+
         if PROMETHEUS_AVAILABLE:
             self._setup_metrics()
             self._initialized = True
         else:
-            logger.warning("Metrics collection disabled - prometheus-client not available")
+            logger.warning(
+                "Metrics collection disabled - prometheus-client not available"
+            )
 
     def _setup_metrics(self):
         """Setup all Prometheus metrics."""
@@ -70,7 +73,7 @@ class MetricsCollector:
             "System uptime in seconds",
             registry=self.registry,
         )
-        
+
         # Workflow metrics
         self.tasks_total = Counter(
             "aimulgent_tasks_total",
@@ -91,7 +94,7 @@ class MetricsCollector:
             ["task_type"],
             registry=self.registry,
         )
-        
+
         # Token usage metrics
         self.tokens_processed = Counter(
             "aimulgent_tokens_processed_total",
@@ -105,7 +108,7 @@ class MetricsCollector:
             ["model"],
             registry=self.registry,
         )
-        
+
         # Energy metrics
         self.energy_consumption = Counter(
             "aimulgent_energy_consumption_wh",
@@ -113,7 +116,7 @@ class MetricsCollector:
             ["component"],
             registry=self.registry,
         )
-        
+
         # Agent metrics
         self.agents_active = Gauge(
             "aimulgent_agents_active",
@@ -127,7 +130,7 @@ class MetricsCollector:
             ["agent_type", "status"],
             registry=self.registry,
         )
-        
+
         # Code analysis metrics
         self.code_lines_analyzed = Counter(
             "aimulgent_code_lines_analyzed_total",
@@ -141,21 +144,21 @@ class MetricsCollector:
             ["severity", "category"],
             registry=self.registry,
         )
-        
+
         # System info
         self.system_info = Info(
             "aimulgent_system",
             "System information",
             registry=self.registry,
         )
-        
+
         self._start_time = time.time()
 
     def update_system_metrics(self):
         """Update system-level metrics."""
         if not self._initialized:
             return
-            
+
         try:
             self.system_cpu_usage.set(psutil.cpu_percent(interval=0.1))
             memory = psutil.virtual_memory()
@@ -166,7 +169,7 @@ class MetricsCollector:
 
     def record_task(self, task_type: str, status: str, duration: float):
         """Record a completed task.
-        
+
         Args:
             task_type: Type of task (e.g., 'analysis', 'coordination')
             status: Task status ('success', 'failure', 'timeout')
@@ -174,13 +177,13 @@ class MetricsCollector:
         """
         if not self._initialized:
             return
-            
+
         self.tasks_total.labels(status=status, task_type=task_type).inc()
         self.task_duration.labels(task_type=task_type).observe(duration)
 
     def record_tokens(self, model: str, operation: str, count: int):
         """Record token usage.
-        
+
         Args:
             model: Model name
             operation: Operation type ('input', 'output')
@@ -188,24 +191,26 @@ class MetricsCollector:
         """
         if not self._initialized:
             return
-            
+
         self.tokens_processed.labels(model=model, operation=operation).inc(count)
 
     def record_energy(self, component: str, watt_hours: float):
         """Record energy consumption.
-        
+
         Args:
             component: Component name ('cpu', 'gpu', 'memory')
             watt_hours: Energy consumed in watt-hours
         """
         if not self._initialized:
             return
-            
+
         self.energy_consumption.labels(component=component).inc(watt_hours)
 
-    def record_code_analysis(self, language: str, lines: int, issues: Dict[str, Dict[str, int]]):
+    def record_code_analysis(
+        self, language: str, lines: int, issues: Dict[str, Dict[str, int]]
+    ):
         """Record code analysis results.
-        
+
         Args:
             language: Programming language
             lines: Number of lines analyzed
@@ -213,46 +218,46 @@ class MetricsCollector:
         """
         if not self._initialized:
             return
-            
+
         self.code_lines_analyzed.labels(language=language).inc(lines)
-        
+
         for severity, categories in issues.items():
             for category, count in categories.items():
-                self.issues_found.labels(
-                    severity=severity,
-                    category=category
-                ).inc(count)
+                self.issues_found.labels(severity=severity, category=category).inc(
+                    count
+                )
 
     def set_system_info(self, info: Dict[str, str]):
         """Set system information.
-        
+
         Args:
             info: Dictionary of system information
         """
         if not self._initialized:
             return
-            
+
         self.system_info.info(info)
 
     def get_metrics(self) -> bytes:
         """Get current metrics in Prometheus format.
-        
+
         Returns:
             Metrics data in Prometheus text format
         """
         if not self._initialized:
             return b""
-            
+
         return generate_latest(self.registry)
 
 
 def track_execution_time(metrics_collector: MetricsCollector, task_type: str):
     """Decorator to track function execution time.
-    
+
     Args:
         metrics_collector: MetricsCollector instance
         task_type: Type of task being tracked
     """
+
     def decorator(func):
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
@@ -269,7 +274,7 @@ def track_execution_time(metrics_collector: MetricsCollector, task_type: str):
                 raise
             finally:
                 metrics_collector.active_tasks.labels(task_type=task_type).dec()
-        
+
         @wraps(func)
         def sync_wrapper(*args, **kwargs):
             start_time = time.time()
@@ -285,11 +290,12 @@ def track_execution_time(metrics_collector: MetricsCollector, task_type: str):
                 raise
             finally:
                 metrics_collector.active_tasks.labels(task_type=task_type).dec()
-        
+
         # Return appropriate wrapper based on function type
         import asyncio
+
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
         return sync_wrapper
-    
+
     return decorator

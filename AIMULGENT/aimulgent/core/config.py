@@ -13,7 +13,7 @@ from pydantic_settings import BaseSettings
 
 class AgentConfig(BaseSettings):
     """Configuration for individual agents."""
-    
+
     enabled: bool = True
     capabilities: List[str] = Field(default_factory=list)
     max_concurrent_tasks: int = 3
@@ -22,7 +22,7 @@ class AgentConfig(BaseSettings):
 
 class CoordinatorConfig(BaseSettings):
     """Configuration for the coordination system."""
-    
+
     max_concurrent_tasks: int = 10
     heartbeat_interval: float = 30.0
     heartbeat_timeout: float = 90.0
@@ -31,44 +31,62 @@ class CoordinatorConfig(BaseSettings):
 
 class Settings(BaseSettings):
     """Main application settings."""
-    
+
     # System settings
     app_name: str = "AIMULGENT"
     version: str = "1.0.0"
     debug: bool = False
-    
+
     # Data directory
     data_dir: Path = Field(default=Path("data"))
-    
+
     # Coordinator settings
     coordinator: CoordinatorConfig = Field(default_factory=CoordinatorConfig)
-    
+
     # Agent configurations
-    agents: Dict[str, AgentConfig] = Field(default_factory=lambda: {
-        "perception": AgentConfig(
-            capabilities=["visual_analysis", "code_structure", "pattern_recognition"]
-        ),
-        "memory": AgentConfig(
-            capabilities=["episodic_memory", "semantic_memory", "retrieval"]
-        ),
-        "data": AgentConfig(
-            capabilities=["data_processing", "schema_analysis", "pipeline_execution"]
-        ),
-        "analysis": AgentConfig(
-            capabilities=["code_analysis", "security_analysis", "quality_assessment"]
-        ),
-        "visualization": AgentConfig(
-            capabilities=["code_visualization", "data_visualization", "report_generation"]
-        )
-    })
-    
+    agents: Dict[str, AgentConfig] = Field(
+        default_factory=lambda: {
+            "perception": AgentConfig(
+                capabilities=[
+                    "visual_analysis",
+                    "code_structure",
+                    "pattern_recognition",
+                ]
+            ),
+            "memory": AgentConfig(
+                capabilities=["episodic_memory", "semantic_memory", "retrieval"]
+            ),
+            "data": AgentConfig(
+                capabilities=[
+                    "data_processing",
+                    "schema_analysis",
+                    "pipeline_execution",
+                ]
+            ),
+            "analysis": AgentConfig(
+                capabilities=[
+                    "code_analysis",
+                    "security_analysis",
+                    "quality_assessment",
+                ]
+            ),
+            "visualization": AgentConfig(
+                capabilities=[
+                    "code_visualization",
+                    "data_visualization",
+                    "report_generation",
+                ]
+            ),
+        }
+    )
+
     # Database settings
     database_url: str = "sqlite:///./aimulgent.db"
-    
+
     # Logging
     log_level: str = "INFO"
     log_file: Optional[Path] = None
-    
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

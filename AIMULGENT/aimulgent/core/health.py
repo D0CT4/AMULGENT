@@ -16,6 +16,7 @@ import logging
 try:
     from fastapi import FastAPI, Response
     from fastapi.responses import JSONResponse, PlainTextResponse
+
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
@@ -29,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 class HealthStatus(str, Enum):
     """Health status enumeration."""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -39,17 +41,17 @@ class HealthCheck:
 
     def __init__(self, metrics_collector: Optional[MetricsCollector] = None):
         """Initialize health check system.
-        
+
         Args:
             metrics_collector: Optional metrics collector for exposing metrics
         """
         self.metrics_collector = metrics_collector
         self.start_time = time.time()
         self.component_checks: Dict[str, callable] = {}
-        
+
     def register_check(self, component: str, check_func: callable):
         """Register a health check for a component.
-        
+
         Args:
             component: Component name
             check_func: Async function that returns (status, message)
@@ -59,96 +61,100 @@ class HealthCheck:
 
     async def check_health(self) -> Dict[str, Any]:
         """Perform comprehensive health check.
-        
+
         Returns:
             Dictionary with health status and component details
         """
         uptime = time.time() - self.start_time
-        
+
         # Run all component checks
         component_results = {}
         overall_status = HealthStatus.HEALTHY
-        
+
         for component, check_func in self.component_checks.items():
             try:
                 status, message = await check_func()
                 component_results[component] = {
-                    "status": status.value if isinstance(status, HealthStatus) else status,
-                    "message": message
+                    "status": (
+                        status.value if isinstance(status, HealthStatus) else status
+                    ),
+                    "message": message,
                 }
-                
+
                 # Update overall status based on component status
                 if status == HealthStatus.UNHEALTHY:
                     overall_status = HealthStatus.UNHEALTHY
-                elif status == HealthStatus.DEGRADED and overall_status != HealthStatus.UNHEALTHY:
+                elif (
+                    status == HealthStatus.DEGRADED
+                    and overall_status != HealthStatus.UNHEALTHY
+                ):
                     overall_status = HealthStatus.DEGRADED
-                    
+
             except Exception as e:
                 logger.error(f"Health check failed for {component}: {e}")
                 component_results[component] = {
                     "status": HealthStatus.UNHEALTHY.value,
-                    "message": f"Check failed: {str(e)}"
+                    "message": f"Check failed: {str(e)}",
                 }
                 overall_status = HealthStatus.UNHEALTHY
-        
+
         return {
             "status": overall_status.value,
             "uptime_seconds": uptime,
             "timestamp": time.time(),
-            "components": component_results
+            "components": component_results,
         }
 
     async def check_readiness(self) -> Dict[str, Any]:
         """Check if system is ready to serve requests.
-        
+
         Returns:
             Dictionary with readiness status
         """
         health_status = await self.check_health()
-        
+
         # System is ready if not unhealthy
         is_ready = health_status["status"] != HealthStatus.UNHEALTHY.value
-        
+
         return {
             "ready": is_ready,
             "status": health_status["status"],
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
 
     async def check_liveness(self) -> Dict[str, Any]:
         """Check if system is alive (basic heartbeat).
-        
+
         Returns:
             Dictionary with liveness status
         """
         return {
             "alive": True,
             "uptime_seconds": time.time() - self.start_time,
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
 
 
 def create_health_app(
-    health_check: HealthCheck,
-    metrics_collector: Optional[MetricsCollector] = None
+    health_check: HealthCheck, metrics_collector: Optional[MetricsCollector] = None
 ) -> Optional[FastAPI]:
     """Create FastAPI application with health endpoints.
-    
+
     Args:
         health_check: HealthCheck instance
         metrics_collector: Optional metrics collector for /metrics endpoint
-        
+
     Returns:
         FastAPI application or None if FastAPI not available
     """
     if not FASTAPI_AVAILABLE:
         logger.warning("FastAPI not available. Cannot create health app.")
         return None
-        
+
     app = FastAPI(
         title="AIMULGENT Health & Metrics",
         description="Health check and metrics endpoints for AIMULGENT system",
-        version="1.0.0"
+        version="1.0.0",
     )
 
     @app.get("/health", response_model=Dict[str, Any])
@@ -170,31 +176,26 @@ def create_health_app(
     async def metrics_endpoint():
         """Prometheus metrics endpoint."""
         if metrics_collector is None:
-            return PlainTextResponse(
-                "Metrics collection not enabled",
-                status_code=503
-            )
-        
+            return PlainTextResponse("Metrics collection not enabled", status_code=503)
+
         try:
             metrics_data = metrics_collector.get_metrics()
             # Update system metrics before returning
             metrics_collector.update_system_metrics()
             return Response(
-                content=metrics_data,
-                media_type="text/plain; version=0.0.4"
+                content=metrics_data, media_type="text/plain; version=0.0.4"
             )
         except Exception as e:
             logger.error(f"Error generating metrics: {e}")
             return PlainTextResponse(
-                f"Error generating metrics: {str(e)}",
-                status_code=500
+                f"Error generating metrics: {str(e)}", status_code=500
             )
 
     @app.get("/status")
     async def status_endpoint():
         """General system status endpoint."""
         health = await health_check.check_health()
-        
+
         status_info = {
             "service": "AIMULGENT",
             "version": "1.0.0",
@@ -203,7 +204,7 @@ def create_health_app(
             "timestamp": health["timestamp"],
             "components_count": len(health.get("components", {})),
         }
-        
+
         return JSONResponse(content=status_info)
 
     return app
