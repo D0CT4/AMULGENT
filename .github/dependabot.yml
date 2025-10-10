@@ -5,15 +5,26 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
+  # Python pip dependencies
   - package-ecosystem: "pip"
-    directory: "/"
+    directory: "/AIMULGENT"
     schedule:
       interval: "weekly"
+    # Group all minor and patch updates together
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
+    # Only allow security and patch updates
+    open-pull-requests-limit: 10
+    
+  # GitHub Actions dependencies
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    # Group all GitHub Actions updates
+    groups:
+      github-actions:
+        patterns:
+          - "*"
