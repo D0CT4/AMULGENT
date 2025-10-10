@@ -1,5 +1,4 @@
 name: Test
-
 # Run tests on push to main branch and on pull requests
 on:
   push:
@@ -35,11 +34,14 @@ jobs:
     - name: Run tests with pytest
       run: |
         cd AIMULGENT
-        pytest tests/ -v --tb=short
+        pytest tests/ -v
         
     - name: Upload test results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ matrix.python-version }}
-        path: AIMULGENT/test-results/
+        path: |
+          AIMULGENT/pytest.xml
+          AIMULGENT/.pytest_cache/
+        retention-days: 7
