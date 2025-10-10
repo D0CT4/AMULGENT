@@ -1,0 +1,62 @@
+name: Security
+
+# Run security checks on push to main branch and on pull requests
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run security checks weekly
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        cd AIMULGENT
+        python -m pip install --upgrade pip
+        pip install bandit[toml] safety
+        pip install -e .
+        
+    - name: Run Bandit security linter
+      run: |
+        cd AIMULGENT
+        bandit -r aimulgent/ -f json -o bandit-report.json || true
+        bandit -r aimulgent/ -f txt
+      continue-on-error: true
+        
+    - name: Check for known security vulnerabilities with Safety
+      run: |
+        cd AIMULGENT
+        safety check --json --output safety-report.json || true
+        safety check
+      continue-on-error: true
+        
+    - name: Upload security reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          AIMULGENT/bandit-report.json
+          AIMULGENT/safety-report.json
+          
+    - name: Security scan summary
+      if: always()
+      run: |
+        echo "Security scan completed."
+        echo "Review the uploaded artifacts for detailed reports."
