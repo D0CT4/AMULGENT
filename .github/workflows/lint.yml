@@ -1,0 +1,59 @@
+name: Lint
+
+# Run linting on push to main branch and on pull requests
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        cd AIMULGENT
+        python -m pip install --upgrade pip
+        pip install flake8 black mypy isort
+        pip install -e .
+        
+    - name: Run flake8
+      run: |
+        cd AIMULGENT
+        flake8 aimulgent/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 aimulgent/ --count --exit-zero --max-complexity=10 --max-line-length=100 --statistics
+        
+    - name: Check code formatting with black
+      run: |
+        cd AIMULGENT
+        black --check --diff aimulgent/
+        
+    - name: Check import sorting with isort
+      run: |
+        cd AIMULGENT
+        isort --check-only --diff aimulgent/
+        
+    - name: Run mypy type checking
+      run: |
+        cd AIMULGENT
+        mypy aimulgent/ --ignore-missing-imports --no-strict-optional
+      continue-on-error: true
+      
+    - name: Upload lint results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: lint-results
+        path: AIMULGENT/lint-results/
