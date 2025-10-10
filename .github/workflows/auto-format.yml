@@ -3,6 +3,9 @@ name: Auto Format Code
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   format:
     runs-on: ubuntu-latest
