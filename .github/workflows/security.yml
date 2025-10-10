@@ -1,5 +1,4 @@
 name: Security
-
 # Run security checks on push to main branch and on pull requests
 on:
   push:
@@ -36,27 +35,18 @@ jobs:
       run: |
         cd AIMULGENT
         bandit -r aimulgent/ -f json -o bandit-report.json || true
-        bandit -r aimulgent/ -f txt
-      continue-on-error: true
         
-    - name: Check for known security vulnerabilities with Safety
+    - name: Run Safety check
       run: |
         cd AIMULGENT
         safety check --json --output safety-report.json || true
-        safety check
-      continue-on-error: true
         
     - name: Upload security reports
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-reports
         path: |
           AIMULGENT/bandit-report.json
           AIMULGENT/safety-report.json
-          
-    - name: Security scan summary
-      if: always()
-      run: |
-        echo "Security scan completed."
-        echo "Review the uploaded artifacts for detailed reports."
+        retention-days: 30
