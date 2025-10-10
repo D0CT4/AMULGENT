@@ -1,5 +1,4 @@
 name: Documentation
-
 # Build documentation on push to main branch and on pull requests
 on:
   push:
@@ -34,36 +33,26 @@ jobs:
         cd AIMULGENT
         mkdir -p docs/sphinx
         sphinx-quickstart -q -p AIMULGENT -a "AI Research Team" -v 1.0.0 docs/sphinx
-        sphinx-build -b html docs/sphinx docs/sphinx/_build/html
-      continue-on-error: true
         
     - name: Build MkDocs documentation
       run: |
         cd AIMULGENT
-        if [ -f mkdocs.yml ]; then
-          mkdocs build --clean
-        else
-          echo "No mkdocs.yml found, skipping MkDocs build"
-        fi
-      continue-on-error: true
+        mkdir -p docs/mkdocs
+        cd docs/mkdocs
+        mkdocs new .
+        mkdocs build
         
     - name: Generate API documentation with pdoc
       run: |
         cd AIMULGENT
-        pdoc aimulgent -o docs/api --html
-      continue-on-error: true
+        mkdir -p docs/api
+        pdoc --html --output-dir docs/api aimulgent
         
     - name: Upload documentation artifacts
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: documentation
         path: |
           AIMULGENT/docs/
-          AIMULGENT/site/
-          
-    - name: Documentation build summary
-      if: always()
-      run: |
-        echo "Documentation build completed."
-        echo "Review the uploaded artifacts for generated documentation."
+        retention-days: 30
