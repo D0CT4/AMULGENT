@@ -3,9 +3,9 @@
 # Updated: October 2024
 
 # Core Deep Learning Frameworks
-torch==2.1.0
+torch==2.8.0
 torchvision==0.16.0
-transformers==4.35.0
+transformers==4.53.0
 sentence-transformers==2.2.2
 tensorflow==2.14.0  # Alternative framework support
 
@@ -28,7 +28,7 @@ mypy==1.7.0
 # Graph Processing and Neural Networks
 networkx==3.2
 torch-geometric==2.4.0
-dgl==1.1.2  # Deep Graph Library
+dgl==2.2.1  # Deep Graph Library
 graphviz==0.20.1
 pygraphviz==1.11
 
@@ -36,12 +36,12 @@ pygraphviz==1.11
 pandas==2.1.3
 numpy==1.26.2
 scipy==1.11.4
-scikit-learn==1.3.2
+scikit-learn==1.5.0
 polars==0.19.13  # Fast dataframe library
 
 # Database and Storage
 sqlalchemy==2.0.23
-pymongo==4.6.0
+pymongo==4.6.3
 redis==5.0.1
 faiss-cpu==1.7.4  # Vector similarity search
 elasticsearch==8.11.0
@@ -51,15 +51,15 @@ matplotlib==3.8.2
 seaborn==0.13.0
 plotly==5.18.0
 bokeh==3.3.1
-pillow==10.1.0
+pillow==10.3.0
 imageio==2.33.0
 
 # Web and API
 fastapi==0.105.0
 uvicorn==0.24.0
-aiohttp==3.9.1
+aiohttp==3.12.14
 websockets==12.0
-requests==2.31.0
+requests==2.32.4
 
 # Async and Concurrency
 asyncopg==0.29.0
@@ -85,13 +85,13 @@ coverage==7.3.2
 ipython==8.18.1
 jupyter==1.0.0
 notebook==7.0.6
-jupyterlab==4.0.9
+jupyterlab==4.4.8
 rich==13.7.0  # Better terminal output
-tqdm==4.66.1  # Progress bars
+tqdm==4.66.3  # Progress bars
 
 # Security and Encryption
-cryptography==41.0.7
-pycryptodome==3.19.0
+cryptography==44.0.1
+pycryptodome==3.19.1
 bcrypt==4.1.1
 
 # Performance and Optimization
@@ -116,12 +116,12 @@ opencv-contrib-python==4.8.1.78
 
 # Natural Language Processing
 spacy==3.7.2
-nltk==3.8.1
+nltk==3.9
 textblob==0.17.1
 
 # Code Generation and Templates
-jinja2==3.1.2
-black==23.11.0  # Code formatting
+jinja2==3.1.6
+black==24.3.0  # Code formatting
 isort==5.12.0  # Import sorting
 
 # System Integration
@@ -131,14 +131,14 @@ click==8.1.7  # CLI framework
 # Documentation Generation
 sphinx==7.2.6
 mkdocs==1.5.3
-pdoc==14.2.0
+pdoc==14.5.1
 
 # Container and Deployment (Optional)
 docker==7.0.0
 kubernetes==28.1.0
 
 # Specialized Libraries for 2025 Features
-langchain==0.0.340  # LLM orchestration
+langchain==0.2.5  # LLM orchestration
 crewai==0.1.28     # Multi-agent framework
 autogen-agentchat==0.2.0  # Microsoft AutoGen
 
