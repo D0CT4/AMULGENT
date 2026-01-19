@@ -69,7 +69,7 @@ dependencies = [
     "huggingface-hub>=0.10.0",
     "langchain>=0.1.0",
     "chromadb>=0.4.0",
-    "faiss-cpu==1.12.0",
+    "faiss-cpu==1.13.0",
     "pinecone-client>=2.2.0",
     "redis>=4.5.0",
     "SQLAlchemy>=2.0.0",
