@@ -4,7 +4,7 @@
 # Core frameworks and utilities
 click>=8.1.0
 pydantic>=1.10.0
-pydantic-settings>=2.0.0
+pydantic-settings>=2.11.0
 
 # Development tools
 black>=23.0.0
