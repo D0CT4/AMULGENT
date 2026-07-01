@@ -75,7 +75,7 @@ loguru==0.7.3
 structlog==25.5.0
 
 # Testing and Quality Assurance
-pytest==8.4.2
+pytest==9.0.3
 pytest-asyncio==1.2.0
 pytest-cov==7.0.0
 pytest-mock==3.15.1
