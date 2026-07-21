@@ -1,6 +1,6 @@
-# AIMULGENT - AI Multiple Agents for Coding
+# AIMULGENT
 # Requirements with pinned versions for reproducibility
-# Updated: October 2024
+# Updated: October 2025
 
 # Core Deep Learning Frameworks
 torch==2.13.0
@@ -21,7 +21,6 @@ tree-sitter-python==0.23.6
 bandit[toml]==1.8.6
 pylint==3.3.9
 radon==6.0.1
-vulture==2.14  # Dead code detection
 flake8==7.3.0
 mypy==1.19.1
 
