@@ -5,7 +5,7 @@
 # Core Deep Learning Frameworks
 torch==2.8.0
 torchvision==0.23.0
-transformers==4.57.6
+transformers==5.10.1
 sentence-transformers==5.1.2
 tensorflow==2.20.0  # Alternative framework support
 
