@@ -68,7 +68,7 @@ aiojobs==1.4.0
 
 # Configuration and Logging
 pydantic==2.12.5
-python-dotenv==1.2.1
+python-dotenv==1.2.3
 pyyaml==6.0.3
 toml==0.10.2
 loguru==0.7.3
