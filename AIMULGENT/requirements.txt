@@ -121,7 +121,7 @@ textblob==0.19.0
 
 # Code Generation and Templates
 jinja2==3.1.6
-black==25.11.0  # Code formatting
+black==26.5.1  # Code formatting
 isort==6.1.0  # Import sorting
 
 # System Integration
