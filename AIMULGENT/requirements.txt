@@ -41,7 +41,7 @@ polars==1.36.1  # Fast dataframe library
 
 # Database and Storage
 sqlalchemy==2.0.46
-pymongo==4.16.0
+pymongo==4.18.2
 redis==7.0.1
 faiss-cpu==1.13.0  # Vector similarity search
 elasticsearch==9.1.3
