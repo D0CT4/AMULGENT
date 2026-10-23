@@ -149,7 +149,7 @@ weaviate-client==4.18.3
 
 # Monitoring and Observability
 prometheus-client==0.24.1
-opentelemetry-api==1.39.1
+opentelemetry-api==1.45.1
 opentelemetry-sdk==1.39.1
 
 # Additional AI/ML Libraries for 2025
