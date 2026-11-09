@@ -4,7 +4,7 @@
 # Core frameworks and utilities
 click>=8.1.0
 pydantic>=1.10.0
-pydantic-settings>=2.0.0
+pydantic-settings>=2.15.0
 
 # Development tools
 black>=23.0.0
@@ -13,7 +13,7 @@ pytest>=7.2.0
 pytest-asyncio>=0.20.0
 
 # Optional: Analysis and visualization
-matplotlib>=3.6.0
+matplotlib>=3.10.9
 requests>=2.28.0
 
 # Optional: Advanced features (install separately if needed)
